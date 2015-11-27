@@ -50,14 +50,68 @@ public class ChainHashMain {
 			return null;
 		}
 		
-		//ここから
-Menu(String string) { // コンストラクタ
-message = string;
+		Menu(String string) { // コンストラクタ
+			message = string;
+		}
+		
+		String getMessage() { // 表示用文字列を返す
+			return message;
+		}
+	}
+	
+	static Menu SelectMenu() { // メニューの選択，メニュー表示と合わせて
+		int key;
+		do {
+			for (Menu m : Menu.values()) { // 拡張for文
+				System.out.printf("(%d) %s ", m.ordinal(), m.getMessage());
+				// メニュー表示
+				if ((m.ordinal() % 3) == 2 &&
+					m.ordinal() != Menu.TERMINATE.ordinal())
+					System.out.println(); // データ検索の後改行をいれるため（細かい）
+			}
+			System.out.print("："); // セパレータ
+			key = stdIn.nextInt(); // メニュー選択の番号の読み込み
+		} while (key < Menu.ADD.ordinal() || key > Menu.TERMINATE.ordinal());
+		
+		return Menu.MenuAt(key); // 選んだキーのメニューを返す
+	}
+	
+	public static void main(String[] args) {
+		Menu menu; // メニュー
+		Data data; // 追加用データ参照
+		Data temp = new Data(); // 読込み用データ
+		
+		ChainHash<Integer, Data> hash = new ChainHash<Integer, Data>(13);
+		// チェインハッシュのインスタンス「hash」を生成，相称型（ジェネリック）を使っている．
+		// <K,V>のそれぞれが，IntegerとDataになっていることに注意
+		// 今回，ハッシュ票のサイズは13になっている．素数が良い．
+		
+		do {
+			switch (menu = SelectMenu()) {
+			case ADD : // 追加
+				data = new Data();
+				data.scanData("追加", Data.NO | Data.NAME);
+				hash.add(data.keyCode(), data);
+				break;
+				
+			case REMOVE : // 削除
+				temp.scanData("削除", Data.NO);
+				hash.remove(temp.keyCode());
+				break;
+				
+			case SEARCH : // 探索
+				temp.scanData("探索", Data.NO);
+				Data t = hash.search(temp.keyCode());
+				if (t != null)
+					System.out.println("キーをもつデータは" + t + "です．");
+				else
+					System.out.println("キーはありません．");
+				break;
+				
+			case DUMP : // 表示
+				hash.dump();
+				break;
+			}
+		} while (menu != Menu.TERMINATE);
+	}
 }
-String getMessage() { // 表示用文字列を返す
-return message;
-}
-}
-static Menu SelectMenu() { // メニューの選択，メニュー表示と合わせて
-int key;
-do {
